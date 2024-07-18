@@ -1,7 +1,12 @@
 import time
 
+import gc 
+
 from neopixel import Neopixel
 from machine import Pin, Timer
+
+# I think this is unncessary, but it doens't hurt anything
+gc.enable()
 
 # set up some default colors
 CLR_BLACK = (0, 0, 0)
@@ -24,14 +29,12 @@ led_solid_1 = Neopixel(NUM_SOLID_PIX, 0, PIN_SOLID_1, "GRB", 0)
 led_solid_2 = Neopixel(NUM_SOLID_PIX_2, 1, PIN_SOLID_2, "GRB", 0)
 led_chase = Neopixel(NUM_CHASE_PIX, 2, PIN_CHASE, "GRB", 0)
 
-led_chase.set_pixel_line_gradient(0, NUM_CHASE_PIX - 1, CLR_BLUE, CLR_BLACK)
-
 led_pin = Pin("LED", Pin.OUT)
 
 toggle_pin = Pin(PIN_TOGGLE, mode=Pin.IN, pull=Pin.PULL_UP)
 
-last_pin_state = 0
-current_pin_state = 0
+last_pin_state = -1
+current_pin_state = toggle_pin.value()
 
 def show_leds() -> None:
     led_solid_1.show()
@@ -39,10 +42,6 @@ def show_leds() -> None:
     led_chase.show()
 
 def switch_color(clr):
-    led_solid_1.fill(CLR_BLACK)
-    led_solid_2.fill(CLR_BLACK)
-    led_chase.fill(CLR_BLACK)
-    show_leds()
 
     led_solid_1.fill(clr)
     led_solid_2.fill(clr)
@@ -54,8 +53,6 @@ def toggle_callback(pin):
     global toggle_pin
 
     current_pin_state = pin.value()
-    print(f"IRQ invoked: ${current_pin_state}")
-    # toggle_pin.irq(trigger=Pin.IRQ_FALLING | Pin.IRQ_RISING, handler=toggle_callback)
 
 def blink_callback(timer):
     global led_pin
