@@ -1,7 +1,7 @@
 import time
 
 from neopixel import Neopixel
-from machine import Pin
+from machine import Pin, Timer
 
 # set up some default colors
 CLR_BLACK = (0, 0, 0)
@@ -24,6 +24,10 @@ led_solid_1 = Neopixel(NUM_SOLID_PIX, 0, PIN_SOLID_1, "GRB", 0)
 led_solid_2 = Neopixel(NUM_SOLID_PIX_2, 1, PIN_SOLID_2, "GRB", 0)
 led_chase = Neopixel(NUM_CHASE_PIX, 2, PIN_CHASE, "GRB", 0)
 
+led_chase.set_pixel_line_gradient(0, NUM_CHASE_PIX - 1, CLR_BLUE, CLR_BLACK)
+
+led_pin = Pin("LED", Pin.OUT)
+
 toggle_pin = Pin(PIN_TOGGLE, mode=Pin.IN, pull=Pin.PULL_UP)
 
 last_pin_state = 0
@@ -42,18 +46,29 @@ def switch_color(clr):
 
     led_solid_1.fill(clr)
     led_solid_2.fill(clr)
-    led_chase.set_pixel_line_gradient(0, NUM_CHASE_PIX, clr, CLR_BLACK)
+    led_chase.set_pixel_line_gradient(0, NUM_CHASE_PIX - 1, clr, CLR_BLACK)
     show_leds()
 
 def toggle_callback(pin):
     global current_pin_state
-    current_pin_state = pin.value
+    global toggle_pin
+
+    current_pin_state = pin.value()
+    print(f"IRQ invoked: ${current_pin_state}")
+    # toggle_pin.irq(trigger=Pin.IRQ_FALLING | Pin.IRQ_RISING, handler=toggle_callback)
+
+def blink_callback(timer):
+    global led_pin
+    led_pin.toggle()
 
 
 toggle_pin.irq(trigger=Pin.IRQ_FALLING | Pin.IRQ_RISING, handler=toggle_callback)
 
+blink_timer = Timer()
+blink_timer.init(freq=1, mode=Timer.PERIODIC, period=1, callback=blink_callback)
+
 while True:
-    led_chase.rotate_right(5)
+    led_chase.rotate_right(1)
     led_chase.show()
     if last_pin_state != current_pin_state:
         if current_pin_state == 0:
@@ -61,5 +76,7 @@ while True:
         else:
             switch_color(CLR_ORANGE)
         last_pin_state = current_pin_state
+
     time.sleep_us(200)
+    
 
