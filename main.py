@@ -1,13 +1,12 @@
 import time
 
 from neopixel import Neopixel
-from typing import Tuple
 from machine import Pin
 
 # set up some default colors
-CLR_BLACK: Tuple[int, int, int] = (0, 0, 0)
-CLR_ORANGE: Tuple[int, int, int] = (255, 50, 0)
-CLR_BLUE: Tuple[int, int, int] = (0, 0, 255)
+CLR_BLACK = (0, 0, 0)
+CLR_ORANGE = (255, 50, 0)
+CLR_BLUE = (0, 0, 255)
 
 # numbers of pixels for our LEDs
 NUM_SOLID_PIX = 7
@@ -35,7 +34,7 @@ def show_leds() -> None:
     led_solid_2.show()
     led_chase.show()
 
-def switch_color(clr: Tuple[int, int, int]) -> None:
+def switch_color(clr):
     led_solid_1.fill(CLR_BLACK)
     led_solid_2.fill(CLR_BLACK)
     led_chase.fill(CLR_BLACK)
